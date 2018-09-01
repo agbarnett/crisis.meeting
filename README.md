@@ -1,2 +1,2 @@
-# crisis.meeting
-Planning for a meeting on the reproducibility crisis in Australia
+# crisis meeting
+Planning for a 2019 meeting on the reproducibility crisis in Australia.
