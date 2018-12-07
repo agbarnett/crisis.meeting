@@ -1,4 +1,4 @@
-# crisis meeting
+# What can researchers do to improve research quality in health and medical research in Australia?
 Planning for a 2019 meeting on the reproducibility crisis in Australia.
 
 **Location**:
