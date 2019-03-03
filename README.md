@@ -1,4 +1,4 @@
-# What can researchers do to improve research quality in health and medical research in Australia?
+# What can researchers do to improve the quality of health and medical research in Australia?
 
 **Location**:
 QUT, Gardens Point Theatre
