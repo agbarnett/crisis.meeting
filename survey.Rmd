@@ -21,16 +21,24 @@ library(stringr)
 data = read.csv('ExportToCSV192936.csv', skip=4, header=TRUE, stringsAsFactors = FALSE, fileEncoding="UTF-8") %>%
   rename('id'= 'X', 'date'= 'X.1', 'email'='X.2', 'list'='X.3',
          'list.policy'='X.4', 'your'='X.5', 'your.institute'='X.6', 'field'='X.7')
+# remove missing responses
+missing = select(data, -date, -email) %>%
+          gather(key = "key", value = "answer", -id) %>%
+  group_by(id) %>%
+  summarise(msum = sum(answer=='')) %>% # count missing
+  filter(msum >= 47)
+# now remove from data
+data = filter(data, id%in% missing$id == FALSE)
 ## switch data to long format
 # Q1
 problems = select(data, 4:23) %>%
-  gather() %>%
+  gather(key='Problem') %>%
   filter(!is.na(value) & value !='') %>%
-  group_by(key) %>%
+  group_by(Problem) %>%
   summarise(count = n()) %>%
   arrange(- count) %>%
-  mutate(key = str_replace_all(string=key, pattern='\\.', replacement = ' '),
-         key = str_replace_all(string=key, pattern=' e g ', replacement = ' e.g., ')
+  mutate(Problem = str_replace_all(string=Problem, pattern='\\.', replacement = ' '),
+         Problem = str_replace_all(string=Problem, pattern=' e g ', replacement = ' e.g., ')
          )
 # Q2
 other.problems = select(data, 24) %>%
@@ -38,13 +46,13 @@ other.problems = select(data, 24) %>%
   mutate(list = str_replace(string=list, pattern="^\\(", replacement = "")) # to make sure this papers as a bullet
 # Q3
 policies = select(data, 25:45) %>%
-  gather() %>%
+  gather(key='Policy') %>%
   filter(!is.na(value) & value !='') %>%
-  group_by(key) %>%
+  group_by(Policy) %>%
   summarise(count = n()) %>%
   arrange(- count) %>%
-  mutate(key = str_replace_all(string=key, pattern='\\.', replacement = ' '),
-         key = str_replace_all(string=key, pattern=' e g ', replacement = ' e.g., ')
+  mutate(Policy = str_replace_all(string=Policy, pattern='\\.', replacement = ' '),
+         Policy = str_replace_all(string=Policy, pattern=' e g ', replacement = ' e.g., ')
          )
 # Q4
 other.policies = select(data, list.policy) %>%
@@ -57,45 +65,65 @@ other.inst = select(data, your.institute) %>%
   filter(your.institute != '')
 ```
 
-# Of the following 20 problems in research, please select which five (or fewer) you think are the most important to address. Please focus on the most important national issues for Australia.
+There were `r nrow(data)` responses.
+
+## Of the following 20 problems in research, please select which five (or fewer) you think are the most important to address. Please focus on the most important national issues for Australia.
 
 ```{r}
 pander(problems, split.cells=80)
 ```
 
-# Are there other major problems in research in Australia that we should consider at the meeting? 
+## Are there other major problems in research in Australia that we should consider at the meeting? 
 
 ```{r, results='asis'}
 pandoc.list(other.problems$list)
 ```
 
-# Which of the following 21 potential policy changes or actions would you endorse to help improve research in Australia? 
+## Which of the following 21 potential policy changes or actions would you endorse to help improve research in Australia? 
 ```{r}
 pander(policies, split.cells=80)
 ```
 
-# Please suggest other possible policy changes or actions	
+## Please suggest other possible policy changes or actions	
 
 ```{r, results='asis'}
 pandoc.list(other.policies$list.policy)
 ```
 
-# Please share the policies or practices that you use in your own research to maximise research quality. If there are none then please write 'None'. All answers are anonymous.	
+## Please share the policies or practices that you use in your own research to maximise research quality. If there are none then please write 'None'. All answers are anonymous.	
 
-```{r, results='asis'}
-pandoc.list(other.you$your)
+```{r include=FALSE}
+# count number that said 'none' and add as separate text
+none.text = '^none|^unsure|^unknown|t know of any|^none that i am aware of|^n/a' # lower case at start of text
+none.your = sum(str_detect(string=tolower(other.inst$your), none.text))
+none.inst = sum(str_detect(string=tolower(other.inst$your.institute), none.text))
 ```
 
-# Please share the policies or practices that your institution have already implemented to maximise research quality. If there are none then please write 'None'. All answers are anonymous.	
+`r none.your` researchers said `None`, `Unknown` or `Unsure`.
 
 ```{r, results='asis'}
-pandoc.list(other.inst$your.institute)
+# remove none/unsure/etc from list
+remove.none = other.you$your
+index = str_detect(string=tolower(other.you$your), '^-$|^none$|^none.$|^none $|none that i am aware of|^unsure$|^unknown|t know of any|^n/a')
+pandoc.list(remove.none[!index])
 ```
 
-# What is your broad area of research?
+## Please share the policies or practices that your institution have already implemented to maximise research quality. If there are none then please write 'None'. All answers are anonymous.	
+
+`r none.inst` researchers said `None`, `Unknown` or `Unsure`.
+
+```{r, results='asis'}
+# remove none/unsure/etc from list
+remove.none = other.inst$your.institute
+index = str_detect(string=tolower(other.inst$your.institute), '^-$|^none$|^none.$|^none $|none that i am aware of|^unsure$|^unknown$|^n/a|^as above')
+pandoc.list(remove.none[!index])
+```
+
+## What is your broad area of research?
 
 ```{r}
 tab = table(data$field)
 names(tab)[names(tab)==''] = 'Missing'
 pander(tab)
 ```
+
