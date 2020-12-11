@@ -22,3 +22,5 @@ Many of these problems are driven by the current hyper-competitive research worl
 Research waste is occurring in Australia and as researchers we should be leading the drive the reduce waste and increase value. The aim of this day is to first hear from researchers working on the issues of research waste, and then spend the afternoon discussing potential policies to reduce waste. Ideally at the end of the day we will have one or two policies that we agree the research community will support and that would help reduce research waste. All researchers and stakeholders are welcome to come and contribute to what we aim to make a positive day of change.
 
 The speakers will include many of the best Australian researchers in the meta-research field. We will also hear from Professor Brian Nosek who is the co-founder and director of the [Center for Open Science](https://cos.io/) in Virginia.
+
+The slides from the day are available [here](https://osf.io/9ga43/).
